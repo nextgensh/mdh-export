@@ -47,8 +47,6 @@ def main(argv:list):
         print('Could not find output folder. Automatically making one.')
         createOutputStructure(outputFolder, createFolder=True)
 
-    return
-
     config = configparser.ConfigParser()
     config.read(argv[1])
 
