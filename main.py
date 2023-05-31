@@ -67,10 +67,10 @@ def main(argv:list):
 
     tableFrame = getTables(cursor)
     tables = tableFrame['tab_name'].values
-    #exportToCsv(tables, cursor, outputFolder+'/'+dirStructure['raw_csv'])
-    #exportToParquet(tables, cursor, outputFolder+'/'+dirStructure['raw_parquet'])
+    exportToCsv(tables, cursor, outputFolder+'/'+dirStructure['raw_csv'])
+    exportToParquet(tables, cursor, outputFolder+'/'+dirStructure['raw_parquet'])
     exportProcessedSurveys(cursor, outputFolder+'/'+dirStructure['survey_processed'])
-    #exportFitbitSummary(cursor, outputFolder+'/'+dirStructure['fitbit_summary'])
+    exportFitbitSummary(cursor, outputFolder+'/'+dirStructure['fitbit_summary'])
 
 def createOutputStructure(outputFolder:str, createFolder=False):
     """
