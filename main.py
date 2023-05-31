@@ -67,10 +67,10 @@ def main(argv:list):
 
     tableFrame = getTables(cursor)
     tables = tableFrame['tab_name'].values
-    exportToCsv(tables, cursor, outputFolder+'/'+dirStructure['raw_csv'])
-    exportToParquet(tables, cursor, outputFolder+'/'+dirStructure['raw_parquet'])
+    #exportToCsv(tables, cursor, outputFolder+'/'+dirStructure['raw_csv'])
+    #exportToParquet(tables, cursor, outputFolder+'/'+dirStructure['raw_parquet'])
     exportProcessedSurveys(cursor, outputFolder+'/'+dirStructure['survey_processed'])
-    exportFitbitSummary(cursor, outputFolder+'/'+dirStructure['fitbit_summary'])
+    #exportFitbitSummary(cursor, outputFolder+'/'+dirStructure['fitbit_summary'])
 
 def createOutputStructure(outputFolder:str, createFolder=False):
     """
@@ -112,25 +112,24 @@ def exportProcessedSurveys(cursor:pyathena.pandas.cursor, outputPrefix:str):
     Given that survey names can change during the study, we look at surveyresults instead of surveydefinations
     to get the names of the surveys.
     """
-    surveyNames = cursor.execute('select distinct(surveyname) names from surveyresults').as_pandas()
-    surveyNames = surveyNames['names'].values
+    surveyNames = cursor.execute('select surveyname, surveykey from surveyresults group by surveyname, surveykey order by surveyname asc').as_pandas()
 
     query = """
         WITH surveyresult AS (
             SELECT surveyresultkey
             FROM surveyresults
-            WHERE (surveyname = '{name}')
+            WHERE surveykey = '{key}'
         )
         SELECT surveyquestionresults.participantidentifier,
         (
             SELECT questiontext
             FROM surveydictionary
             WHERE resultidentifier = surveyquestionresults.resultidentifier
-                AND (surveyname = '{name}')
+                AND surveykey = '{key}'
                 AND surveyversion >= (
                     SELECT MAX(surveyversion) as max_version
                     FROM surveydictionary
-                    WHERE (surveyname = '{name}')
+                    WHERE surveykey = '{key}'
                     GROUP BY surveyname
                 )
         ) AS question,
@@ -141,9 +140,9 @@ def exportProcessedSurveys(cursor:pyathena.pandas.cursor, outputPrefix:str):
             FROM surveyquestionresults
         INNER JOIN surveyresult ON surveyresult.surveyresultkey = surveyquestionresults.surveyresultkey
     """
-    for survey in surveyNames:
-        frame = cursor.execute(query.format(name=survey)).as_pandas()
-        frame.to_csv(outputPrefix+'/{survey}.csv'.format(survey=survey), index=False)
+    for surveyName, surveyKey in zip(surveyNames['surveyname'], surveyNames['surveykey']):
+        frame = cursor.execute(query.format(key=surveyKey)).as_pandas()
+        frame.to_csv(outputPrefix+'/{survey}.csv'.format(survey=surveyName), index=False)
 
 def exportFitbitSummary(cursor:pyathena.pandas.cursor, outputPrefix:str):
     """
