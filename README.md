@@ -89,3 +89,6 @@ If you think of something you would like in this tool, please submit a pull requ
 * Examples of using MDH Serivce API (with sensor demo for steps) - https://github.com/nextgensh/MDH-Service-Examples.git
 
 Thats all folks! Happy Hacking.
+
+## Changelog
+1. 7.20.2023 - Added an option to skip tables for the full export in the config.ini file. Useful to exclude intraday fitbit data exports.

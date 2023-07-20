@@ -65,8 +65,16 @@ def main(argv:list):
                 cursor_class=PandasCursor
                 ).cursor()
 
+    skip_tables = default['skip_tables'].split(',')
+
     tableFrame = getTables(cursor)
-    tables = tableFrame['tab_name'].values
+    tables = []
+    for t in tableFrame['tab_name'].values:
+        if t in skip_tables:
+            print('Skipping table - {}'.format(t))
+        else:
+            tables.append(t.strip())
+
     exportToCsv(tables, cursor, outputFolder+'/'+dirStructure['raw_csv'])
     exportToParquet(tables, cursor, outputFolder+'/'+dirStructure['raw_parquet'])
     exportProcessedSurveys(cursor, outputFolder+'/'+dirStructure['survey_processed'])
